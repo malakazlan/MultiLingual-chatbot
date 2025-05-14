@@ -3,28 +3,202 @@ import traceback
 import os 
 from multilingual_rag_kb.chunking.fixed_overlap_chunker import fixed_length_chunk
 from multilingual_rag_kb.chunking.sentence_chunker import sentence_chunk
+from multilingual_rag_kb.utils.text_cleaner import preprocess_file
 
 RAW_DIR = "multilingual_rag_kb/data/raw"
 PROCESSED_DIR = "multilingual_rag_kb/data/processed"
 
+# def preprocess_all_files():
+#     for file_name in os.listdir(RAW_DIR):
+#         if not file_name.endswith(".txt"):
+#             continue
 
-def chunk_demo():
-    for file_name in os.listdir(PROCESSED_DIR):
-        if not file_name.endswith("_clean.txt"):
-            continue
+#         input_path = os.path.join(RAW_DIR, file_name)
+#         output_path = os.path.join(PROCESSED_DIR, file_name.replace(".txt", "_clean.txt"))
 
-        print(f"\n Processing: {file_name}")
-        with open(os.path.join(PROCESSED_DIR, file_name), 'r', encoding='utf-8') as f:
-            sentences = [line.strip() for line in f.readlines() if line.strip()]
+#         print(f"Preprocessing: {file_name}")
+#         preprocess_file(input_path, output_path)
 
-        fixed_chunks = fixed_length_chunk(sentences, chunk_size=5, overlap=2)
-        sent_chunks = sentence_chunk(sentences, chunk_size=5)
+# import re
+# import nltk
+# from nltk import word_tokenize, pos_tag, ne_chunk
+# from nltk.tree import Tree
+# nltk.download('maxent_ne_chunker')
+# nltk.download('words')
+# nltk.download('punkt')
+# nltk.download('averaged_perceptron_tagger')
 
-        print(f" Fixed Chunks (5, overlap 2): {len(fixed_chunks)}")
-        print(f" Sentence Chunks (5 each): {len(sent_chunks)}")
-        print("Sample Fixed Chunk:\n", fixed_chunks[0][:300])
-        print("Sample Sentence Chunk:\n", sent_chunks[0][:300])
 
+
+# # --- Date Regex ---
+# date_pattern = re.compile(r"\b(?:\d{1,2}(?:st|nd|rd|th)?\s)?(?:January|February|March|April|May|June|July|August|September|October|November|December)\s\d{4}\b")
+
+# def contains_date(text):
+#     return bool(date_pattern.search(text))
+
+# # # --- Entity Extractor ---
+# def extract_named_entities(text):
+#     try:
+#         entities = []
+#         for sentence in nltk.sent_tokenize(text):
+#             tree = ne_chunk(pos_tag(word_tokenize(sentence)))
+#             sentence_entities = [" ".join(c[0] for c in subtree) for subtree in tree if isinstance(subtree, Tree)]
+#             entities.extend(sentence_entities)
+#         return list(set(entities))
+#     except:
+#         return []
+
+
+
+
+
+# def chunk_demo():
+#     for file_name in os.listdir(PROCESSED_DIR):
+#         if not file_name.endswith("_clean.txt"):
+#             continue
+
+#         print(f"\n Processing: {file_name}")
+#         with open(os.path.join(PROCESSED_DIR, file_name), 'r', encoding='utf-8') as f:
+#             sentences = [line.strip() for line in f.readlines() if line.strip()]
+
+#         fixed_chunks = fixed_length_chunk(sentences, chunk_size=5, overlap=2)
+#         sent_chunks = sentence_chunk(sentences, chunk_size=5)
+
+#         print(f" Fixed Chunks (5, overlap 2): {len(fixed_chunks)}")
+#         print(f" Sentence Chunks (5 each): {len(sent_chunks)}")
+#         print("Sample Fixed Chunk:\n", fixed_chunks[0][:300])
+#         print("Sample Sentence Chunk:\n", sent_chunks[0][:300])
+
+# if __name__ == "__main__":
+#     # preprocess_all_files()
+#     chunk_demo()
+from multilingual_rag_kb.models.e5_model import E5Embedder
+from multilingual_rag_kb.models.sbert_model import SBERTEmbedder
+from multilingual_rag_kb.models.labse_model import LaBSEEmbedder
+from multilingual_rag_kb.vector_store.pinecone_store import PineconeStore
+from multilingual_rag_kb.config import PINECONE_API_KEY, PINECONE_ENV, PINECONE_INDEX_NAME
+from multilingual_rag_kb.models.e5_model import E5Embedder
+# def embed_chunks_example():
+#     sbert = SBERTEmbedder()
+#     labse = LaBSEEmbedder()
+#     e5 = E5Embedder()
+
+#     for file_name in os.listdir(PROCESSED_DIR):
+#         if not file_name.endswith("_clean.txt"):
+#             continue
+
+#         with open(os.path.join(PROCESSED_DIR, file_name), 'r', encoding='utf-8') as f:
+#             sentences = [line.strip() for line in f.readlines() if line.strip()]
+
+#         chunks = sentence_chunk(sentences, chunk_size=5)
+
+#         print(f"\n Embedding {len(chunks)} chunks from {file_name}")
+#         print("SBERT (first vector):", sbert.embed([chunks[0]])[0][:5])
+#         print("LaBSE (first vector):", labse.embed([chunks[0]])[0][:5])
+#         print("E5 (first vector):", e5.embed([chunks[0]])[0][:5])
+
+# def push_to_pinecone():
+#     embedder = E5Embedder()
+#     store = PineconeStore(PINECONE_INDEX_NAME, PINECONE_API_KEY, PINECONE_ENV, namespace="finance_rag_v2")
+
+
+#     for file_name in os.listdir(PROCESSED_DIR):
+#         if not file_name.endswith("_clean.txt"):
+#             continue
+
+#         with open(os.path.join(PROCESSED_DIR, file_name), 'r', encoding='utf-8') as f:
+#             sentences = [line.strip() for line in f.readlines() if line.strip()]
+
+#         chunks = sentence_chunk(sentences, chunk_size=5)
+#         embeddings = embedder.embed(chunks)
+
+#         metadata = [
+#             {
+#                 "source": file_name.replace("_clean.txt", ""),
+#                 "chunk_id": i,
+#                 "text": chunks[i],
+#                 "entities": extract_named_entities(chunks[i]),
+#                 "has_date": contains_date(chunks[i])
+#     }
+#             for i in range(len(chunks))
+#         ]
+
+        
+#         store.upsert_chunks(chunks, embeddings, metadata)
+#         print(f"Uploaded {len(chunks)} chunks from {file_name} to Pinecone.")
+
+def run_similarity_search():
+    query = input("\n Enter your finance-related question:\n> ")
+
+    embedder = E5Embedder()
+    store = PineconeStore(
+        PINECONE_INDEX_NAME,
+        PINECONE_API_KEY,
+        PINECONE_ENV,
+        namespace="finance_rag_v2"  # your latest namespace
+    )
+
+    query_embedding = embedder.embed([f"query: {query}"])[0]
+
+    # filter_metadata = {
+    #     "entities": {"$in": ["Sheila A. Stamps"]},
+    #     "has_date": True
+    # }
+
+    # For debugging: remove filter, get all top_k results
+    results = store.search(query_embedding, top_k=5)
+
+    print("\n Top Matching Chunks:")
+    if not results.get('matches'):
+        print("No matches found.")
+    else:
+        for match in results['matches']:
+            metadata = match['metadata']
+            print(f"\n[Score: {match['score']:.4f}] From: {metadata['source']}, Chunk ID: {metadata['chunk_id']}")
+            print(f"→ Content Preview: {metadata.get('text', 'N/A')[:200]}")
+            print(f"→ Entities: {metadata.get('entities', [])}")
+            print(f"→ Has Date: {metadata.get('has_date', False)}")
+
+
+
+
+from multilingual_rag_kb.llm.prompt_templates import build_rag_prompt
+from multilingual_rag_kb.llm.ollama_engine import get_llm_response
+
+# def run_rag_chat():
+#     query = input("\n Ask a question (multilingual supported):\n> ")
+#     embedder = E5Embedder()
+#     store = PineconeStore(PINECONE_INDEX_NAME, PINECONE_API_KEY, PINECONE_ENV)
+
+#     query_embedding = embedder.embed([f"query: {query}"])[0]
+    
+# #     filter_metadata = {
+# #     "entities": {"$in": ["R. Brad Oates"]},
+# #     "has_date": True
+# # }
+
+#     result = store.search(query_embedding, top_k=5)
+
+    
+
+#     top_chunks = [match["metadata"]["text"] for match in result["matches"]]
+#     print("\n Retrieved Chunks:")
+#     for i, c in enumerate(top_chunks):
+#         print(f"[{i+1}] {c[:200]}")
+
+#     prompt = build_rag_prompt(query, top_chunks)
+#     # print("\nPrompt Sent to LLM:\n")
+#     # print(prompt)
+    
+#     answer = get_llm_response(prompt)
+
+#     print("\n LLM Answer:")
+#     print(answer)
+    
 if __name__ == "__main__":
     # preprocess_all_files()
-    chunk_demo()
+    # chunk_demo()
+    # embed_chunks_example()
+    # push_to_pinecone()
+    run_similarity_search()
+    # run_rag_chat()

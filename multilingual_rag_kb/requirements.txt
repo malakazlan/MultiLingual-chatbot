@@ -5,9 +5,9 @@ sentence-transformers
 numpy
 scikit-learn
 
-# LASER
-fairseq
-fastBPE
+# # LASER
+# fairseq
+# fastBPE
 sacremoses
 
 # Language Processing
@@ -19,7 +19,7 @@ nltk
 tqdm
 
 # Pinecone or MongoDB (Choose based on your DB)
-pinecone-client  # Preferred
+pinecone # Preferred
 # pymongo         # Uncomment if using MongoDB
 
 # Utility
