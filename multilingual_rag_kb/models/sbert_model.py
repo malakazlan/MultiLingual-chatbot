@@ -7,3 +7,4 @@ class SBERTEmbedder:
     def embed(self, texts: list[str]) -> list[list[float]]:
         return self.model.encode(texts, convert_to_numpy=True).tolist()
  
+#  return nothin 

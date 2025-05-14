@@ -1,1 +1,3 @@
- 
+PINECONE_API_KEY = "pcsk_2HJ1PQ_8McsP5TSvG1i2BK8gtAbJAepf6GFrhbJ8Gk5LPfz29WMNzznohEki6ARznz7W3D"
+PINECONE_ENV = "us-east1-gcp"
+PINECONE_INDEX_NAME = "finance-rag-index"
