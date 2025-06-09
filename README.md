@@ -1,54 +1,139 @@
 # Multilingual RAG Knowledge Base
 
-This project implements a multilingual Retrieval-Augmented Generation (RAG) knowledge base system for document chunking, embedding, and semantic search using Pinecone as a vector store. It is designed to support finance-related documents and can be extended to other domains.
+[![Python Version](https://img.shields.io/badge/python-3.8%2B-blue)](https://www.python.org/downloads/)
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![Status](https://img.shields.io/badge/status-active-success)]()
 
-## Features
-- **Text Preprocessing & Chunking:**
-  - Cleans and splits raw text files into manageable chunks using fixed-length and sentence-based strategies.
-- **Multilingual Embedding:**
-  - Supports multiple embedding models (SBERT, LaBSE, E5) for robust semantic representation.
-- **Vector Store Integration:**
-  - Uses Pinecone for scalable vector storage and fast similarity search.
-- **Metadata Extraction:**
-  - (Optional) Extracts named entities and date information for advanced filtering.
-- **Interactive Search:**
-  - Command-line interface for querying the knowledge base and retrieving the most relevant document chunks.
+A powerful multilingual Retrieval-Augmented Generation (RAG) knowledge base system that enables efficient document processing, semantic search, and intelligent information retrieval across multiple languages. Built with scalability and performance in mind, this system is particularly well-suited for finance-related documents but can be adapted for various domains.
 
-## Usage
+## 📸 Screenshots
 
-1. **Preprocess and Chunk Documents**
-   - Place your raw `.txt` files in `multilingual_rag_kb/data/raw/`.
-   - (Optional) Run the preprocessing and chunking functions to generate clean, chunked data in `data/processed/`.
+![Demo Screenshot](multilingual_rag_kb/screenshots/demo.png)
 
-2. **Embed and Upload Chunks to Pinecone**
-   - Use the `push_to_pinecone()` function to embed chunks and upload them to the Pinecone vector store.
-   - Configure your Pinecone API key, environment, and index name in `multilingual_rag_kb/config.py`.
+## ✨ Features
 
-3. **Run Similarity Search**
-   - Use the `run_similarity_search()` function to enter a query and retrieve the top matching chunks from Pinecone.
-   - Results include content previews and (optionally) extracted entities and date flags.
+- **Advanced Text Processing**
+  - Intelligent text cleaning and normalization
+  - Sophisticated chunking strategies (fixed-length and sentence-based)
+  - Support for multiple document formats
 
-4. **(Optional) RAG Chat**
-   - Integrate with an LLM (e.g., via Ollama) to generate answers using retrieved context chunks.
+- **Multilingual Capabilities**
+  - Cross-lingual embedding support (SBERT, LaBSE, E5)
+  - Language-agnostic semantic search
+  - Automatic language detection
 
-## Requirements
-- Python 3.8+
-- Pinecone
-- NLTK, sentence-transformers, and other dependencies (see your environment setup)
+- **Vector Store Integration**
+  - Seamless Pinecone integration
+  - Efficient similarity search
+  - Scalable vector storage
 
-## Project Structure
-- `chunking/` - Chunking utilities
-- `data/` - Raw and processed data
-- `embeddings/` - Embedding logic
-- `llm/` - LLM integration and prompt templates
-- `models/` - Embedding model wrappers
-- `utils/` - Text cleaning and helpers
-- `vector_store/` - Pinecone and other vector store integrations
+- **Enhanced Metadata**
+  - Named entity recognition
+  - Temporal information extraction
+  - Custom metadata support
 
-## Notes
-- Entity extraction and date filtering are optional and can be enabled by uncommenting the relevant code in `app.py`.
-- Make sure to set up your Pinecone account and environment variables before running the upload or search scripts.
+- **Interactive Interface**
+  - User-friendly CLI
+  - Real-time search results
+  - Context-aware responses
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Python 3.8 or higher
+- Pinecone account and API key
+- Required Python packages (see `requirements.txt`)
+
+### Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/multilingual-rag-kb.git
+   cd multilingual-rag-kb
+   ```
+
+2. Create and activate a virtual environment:
+   ```bash
+   python -m venv .venv
+   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+   ```
+
+3. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. Configure your environment:
+   - Copy `config.example.py` to `config.py`
+   - Add your Pinecone API key and other configurations
+
+## 💻 Usage
+
+### Document Processing
+
+1. Place your documents in `data/raw/`:
+   ```bash
+   cp your_documents/*.txt multilingual_rag_kb/data/raw/
+   ```
+
+2. Process and chunk documents:
+   ```python
+   from multilingual_rag_kb.chunking import process_documents
+   process_documents()
+   ```
+
+### Vector Store Operations
+
+1. Upload to Pinecone:
+   ```python
+   from multilingual_rag_kb.vector_store import push_to_pinecone
+   push_to_pinecone()
+   ```
+
+2. Perform similarity search:
+   ```python
+   from multilingual_rag_kb.vector_store import run_similarity_search
+   results = run_similarity_search("your query here")
+   ```
+
+## 📁 Project Structure
+
+```
+multilingual_rag_kb/
+├── chunking/          # Document chunking utilities
+├── data/             # Raw and processed data
+├── embeddings/       # Embedding model implementations
+├── llm/             # LLM integration and prompt engineering strategies
+├── models/          # Model wrappers
+├── utils/           # Helper functions
+└── vector_store/    # Vector store integrations
+```
+
+## 🔧 Configuration
+
+The system can be configured through `config.py` (not tracked in git). Key settings include:
+
+- Pinecone API credentials
+- Embedding model selection
+- Chunking parameters
+- Search configuration
+- **LLM Prompt Templates:** Custom templates for diverse use cases
+
+## �� Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- [Pinecone](https://www.pinecone.io/) for vector store infrastructure
+- [Sentence-Transformers](https://www.sbert.net/) for embedding models
+- [NLTK](https://www.nltk.org/) for text processing
 
 ---
 
-For more details, see the code in `app.py` and the respective module folders. 
+For detailed documentation and examples, please refer to the code in `app.py` and the respective module folders. 
