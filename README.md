@@ -6,7 +6,7 @@
 
 A powerful multilingual Retrieval-Augmented Generation (RAG) knowledge base system that enables efficient document processing, semantic search, and intelligent information retrieval across multiple languages. Built with scalability and performance in mind, this system is particularly well-suited for finance-related documents but can be adapted for various domains.
 
-## 📸 Screenshots
+## 📸
 
 ![Demo Screenshot](multilingual_rag_kb/screenshots/demo.png)
 
