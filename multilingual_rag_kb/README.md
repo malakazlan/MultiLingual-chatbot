@@ -6,9 +6,9 @@
 
 A powerful multilingual Retrieval-Augmented Generation (RAG) knowledge base system that enables efficient document processing, semantic search, and intelligent information retrieval across multiple languages. Built with scalability and performance in mind, this system is particularly well-suited for finance-related documents but can be adapted for various domains.
 
-## ✨
+## 📸 Screenshots
 
-*[demo.png]*
+![Demo Screenshot](multilingual_rag_kb/screenshots/demo.png)
 
 ## ✨ Features
 
@@ -104,7 +104,7 @@ multilingual_rag_kb/
 ├── chunking/          # Document chunking utilities
 ├── data/             # Raw and processed data
 ├── embeddings/       # Embedding model implementations
-├── llm/             # LLM integration
+├── llm/             # LLM integration and prompt engineering strategies
 ├── models/          # Model wrappers
 ├── utils/           # Helper functions
 └── vector_store/    # Vector store integrations
@@ -118,8 +118,9 @@ The system can be configured through `config.py` (not tracked in git). Key setti
 - Embedding model selection
 - Chunking parameters
 - Search configuration
+- **LLM Prompt Templates:** Custom templates for diverse use cases
 
-## 🤝 Contributing
+## �� Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
