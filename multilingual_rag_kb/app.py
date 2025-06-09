@@ -4,6 +4,9 @@ import os
 from multilingual_rag_kb.chunking.fixed_overlap_chunker import fixed_length_chunk
 from multilingual_rag_kb.chunking.sentence_chunker import sentence_chunk
 from multilingual_rag_kb.utils.text_cleaner import preprocess_file
+import time
+from sklearn.metrics.pairwise import cosine_similarity
+from sentence_transformers import SentenceTransformer
 
 RAW_DIR = "multilingual_rag_kb/data/raw"
 PROCESSED_DIR = "multilingual_rag_kb/data/processed"
@@ -127,78 +130,191 @@ from multilingual_rag_kb.models.e5_model import E5Embedder
 #         store.upsert_chunks(chunks, embeddings, metadata)
 #         print(f"Uploaded {len(chunks)} chunks from {file_name} to Pinecone.")
 
-def run_similarity_search():
-    query = input("\n Enter your finance-related question:\n> ")
+# def run_similarity_search():
+#     query = input("\n Enter your finance-related question:\n> ")
 
-    embedder = E5Embedder()
-    store = PineconeStore(
-        PINECONE_INDEX_NAME,
-        PINECONE_API_KEY,
-        PINECONE_ENV,
-        namespace="finance_rag_v2"  # your latest namespace
-    )
+#     embedder = E5Embedder()
+#     store = PineconeStore(
+#         PINECONE_INDEX_NAME,
+#         PINECONE_API_KEY,
+#         PINECONE_ENV,
+#         namespace="finance_rag_v2"  # your latest namespace
+#     )
 
-    query_embedding = embedder.embed([f"query: {query}"])[0]
+#     query_embedding = embedder.embed([f"query: {query}"])[0]
 
-    # filter_metadata = {
-    #     "entities": {"$in": ["Sheila A. Stamps"]},
-    #     "has_date": True
-    # }
+#     # filter_metadata = {
+#     #     "entities": {"$in": ["Sheila A. Stamps"]},
+#     #     "has_date": True
+#     # }
 
-    # For debugging: remove filter, get all top_k results
-    results = store.search(query_embedding, top_k=5)
+#     # For debugging: remove filter, get all top_k results
+#     results = store.search(query_embedding, top_k=5)
 
-    print("\n Top Matching Chunks:")
-    if not results.get('matches'):
-        print("No matches found.")
-    else:
-        for match in results['matches']:
-            metadata = match['metadata']
-            print(f"\n[Score: {match['score']:.4f}] From: {metadata['source']}, Chunk ID: {metadata['chunk_id']}")
-            print(f"→ Content Preview: {metadata.get('text', 'N/A')[:200]}")
-            print(f"→ Entities: {metadata.get('entities', [])}")
-            print(f"→ Has Date: {metadata.get('has_date', False)}")
+#     print("\n Top Matching Chunks:")
+#     if not results.get('matches'):
+#         print("No matches found.")
+#     else:
+#         for match in results['matches']:
+#             metadata = match['metadata']
+#             print(f"\n[Score: {match['score']:.4f}] From: {metadata['source']}, Chunk ID: {metadata['chunk_id']}")
+#             print(f"→ Content Preview: {metadata.get('text', 'N/A')[:200]}")
+#             print(f"→ Entities: {metadata.get('entities', [])}")
+#             print(f"→ Has Date: {metadata.get('has_date', False)}")
 
 
 
 
 from multilingual_rag_kb.llm.prompt_templates import build_rag_prompt
 from multilingual_rag_kb.llm.ollama_engine import get_llm_response
+from multilingual_rag_kb.llm.gemini_engine import get_gemini_response
 
-# def run_rag_chat():
-#     query = input("\n Ask a question (multilingual supported):\n> ")
-#     embedder = E5Embedder()
-#     store = PineconeStore(PINECONE_INDEX_NAME, PINECONE_API_KEY, PINECONE_ENV)
+def run_rag_chat():
+    query = input("\n Ask a question (multilingual supported):\n> ")
+    embedder = E5Embedder()
+    store = PineconeStore(PINECONE_INDEX_NAME, PINECONE_API_KEY, PINECONE_ENV,namespace='finance_rag_v2')
 
-#     query_embedding = embedder.embed([f"query: {query}"])[0]
+    query_embedding = embedder.embed([f"query: {query}"])[0]
     
-# #     filter_metadata = {
-# #     "entities": {"$in": ["R. Brad Oates"]},
-# #     "has_date": True
-# # }
+#     filter_metadata = {
+#     "entities": {"$in": ["R. Brad Oates"]},
+#     "has_date": True
+# }
 
-#     result = store.search(query_embedding, top_k=5)
+    result = store.search(query_embedding, top_k=5)
 
     
 
-#     top_chunks = [match["metadata"]["text"] for match in result["matches"]]
-#     print("\n Retrieved Chunks:")
-#     for i, c in enumerate(top_chunks):
-#         print(f"[{i+1}] {c[:200]}")
+    top_chunks = [match["metadata"]["text"] for match in result["matches"]]
+    print("\n Retrieved Chunks:")
+    for i, c in enumerate(top_chunks):
+        print(f"[{i+1}] {c[:200]}")
 
-#     prompt = build_rag_prompt(query, top_chunks)
-#     # print("\nPrompt Sent to LLM:\n")
-#     # print(prompt)
+    prompt = build_rag_prompt(query, top_chunks)
+    # print("\nPrompt Sent to LLM:\n")
+    # print(prompt)
     
-#     answer = get_llm_response(prompt)
+    llm_choice = input("\nChoose LLM engine ([O]llama/GenAI/[g]Gemini, default=Ollama): ").strip().lower()
+    if llm_choice == 'g':
+        answer =  get_gemini_response(prompt)
+    
+    else:
+        answer = get_llm_response(prompt)
 
-#     print("\n LLM Answer:")
-#     print(answer)
+    print("\n LLM Answer:")
+    print(answer)
     
+def evaluate_top_k_accuracy(test_queries, ground_truths, k=5):
+    """
+    test_queries: list of user queries
+    ground_truths: list of expected relevant chunk texts (same order as test_queries)
+    k: number of top chunks to consider
+    """
+    correct = 0
+    for query, truth in zip(test_queries, ground_truths):
+        embedder = E5Embedder()
+        store = PineconeStore(PINECONE_INDEX_NAME, PINECONE_API_KEY, PINECONE_ENV, namespace='finance_rag_v2')
+        query_embedding = embedder.embed([f"query: {query}"])[0]
+        result = store.search(query_embedding, top_k=k)
+        top_chunks = [match["metadata"]["text"] for match in result["matches"]]
+        if any(truth in chunk for chunk in top_chunks):
+            correct += 1
+    accuracy = correct / len(test_queries)
+    print(f"Top-{k} Retrieval Accuracy: {accuracy:.2%}")
+    return accuracy
+
+def evaluate_relevance(test_queries, reference_answers, llm_func, k=5):
+    """
+    llm_func: function to get LLM answer (e.g., get_llm_response or get_gemini_response)
+    """
+    model = SentenceTransformer('all-MiniLM-L6-v2')
+    scores = []
+    for query, ref in zip(test_queries, reference_answers):
+        embedder = E5Embedder()
+        store = PineconeStore(PINECONE_INDEX_NAME, PINECONE_API_KEY, PINECONE_ENV, namespace='finance_rag_v2')
+        query_embedding = embedder.embed([f"query: {query}"])[0]
+        result = store.search(query_embedding, top_k=k)
+        top_chunks = [match["metadata"]["text"] for match in result["matches"]]
+        prompt = build_rag_prompt(query, top_chunks)
+        answer = llm_func(prompt)
+        answer_emb = model.encode([answer])[0]
+        ref_emb = model.encode([ref])[0]
+        sim = cosine_similarity([answer_emb], [ref_emb])[0][0]
+        scores.append(sim)
+        print(f"Query: {query}\nLLM Answer: {answer}\nReference: {ref}\nSimilarity: {sim:.2f}\n")
+    avg_score = sum(scores) / len(scores)
+    print(f"Average Relevance (cosine similarity): {avg_score:.2f}")
+    return avg_score
+
+def measure_response_latency(query, llm_func, k=5):
+    embedder = E5Embedder()
+    store = PineconeStore(PINECONE_INDEX_NAME, PINECONE_API_KEY, PINECONE_ENV, namespace='finance_rag_v2')
+    query_embedding = embedder.embed([f"query: {query}"])[0]
+    result = store.search(query_embedding, top_k=k)
+    top_chunks = [match["metadata"]["text"] for match in result["matches"]]
+    prompt = build_rag_prompt(query, top_chunks)
+    start = time.time()
+    answer = llm_func(prompt)
+    end = time.time()
+    latency = end - start
+    print(f"Response latency: {latency:.2f} seconds")
+    return latency
+
+# Example test data (replace with your real data)
+test_queries = [
+    " tell me about Apple Seven Advisors",
+    "What is they raised money?"
+]
+ground_truths = [
+    """pple REIT Seven, Inc. (“AR7”), is a non-traded REIT organized under the laws of Virginia with a class of securities registered under Section 12(g) of the Exchange Act and is subject to the reporting requirements of Section 13(a) of the Exchange Act.
+AR7 owned 51 hotels operating in 18 states as of December 31, 2012"""
+]
+reference_answers = [
+    """AR7 raised approximately $1 billion between May 2005 and July 2007, and had approximately 19,800 beneficial unitholders as of February 28, 2013.
+AR7 instituted a DRIP by filing a Form S-3 registration statement on July 17, 2007, which it amended and restated on January 13, 2012.
+As of December 31, 2012, AR7 had sold approximately 11.3 million units representing approximately $124.5 million in proceeds pursuant to these DRIP offerings."""
+]
+
+def main_menu():
+    print("\nSelect an option:")
+    print("1. Run RAG Chat")
+    print("2. Evaluate Top-k Retrieval Accuracy")
+    print("3. Evaluate Relevance of Generated Answers")
+    print("4. Measure Response Latency")
+    print("5. Exit")
+    choice = input("> ").strip()
+    if choice == '1':
+        run_rag_chat()
+    elif choice == '2':
+        evaluate_top_k_accuracy(test_queries, ground_truths, k=5)
+    elif choice == '3':
+        # Choose LLM engine for evaluation
+        llm_choice = input("Use [O]llama or [G]emini for LLM? (default=Ollama): ").strip().lower()
+        if llm_choice == 'g':
+            llm_func = get_gemini_response
+        else:
+            llm_func = get_llm_response
+        evaluate_relevance(test_queries, reference_answers, llm_func, k=5)
+    elif choice == '4':
+        query = input("Enter a query to measure latency: ")
+        llm_choice = input("Use [O]llama or [G]emini for LLM? (default=Ollama): ").strip().lower()
+        if llm_choice == 'g':
+            llm_func = get_gemini_response
+        else:
+            llm_func = get_llm_response
+        measure_response_latency(query, llm_func, k=5)
+    elif choice == '5':
+        print("Exiting.")
+        exit()
+    else:
+        print("Invalid choice.")
+        main_menu()
+
 if __name__ == "__main__":
     # preprocess_all_files()
     # chunk_demo()
     # embed_chunks_example()
     # push_to_pinecone()
-    run_similarity_search()
-    # run_rag_chat()
+    # run_similarity_search()
+    run_rag_chat()
+    main_menu()
