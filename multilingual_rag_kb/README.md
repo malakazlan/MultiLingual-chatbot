@@ -118,7 +118,11 @@ The system can be configured through `config.py` (not tracked in git). Key setti
 - Embedding model selection
 - Chunking parameters
 - Search configuration
-- **LLM Prompt Templates:** Custom templates for diverse use cases
+- **LLM Prompt Templates:** Custom templates for diverse use cases, designed with professional prompt engineering principles for optimal LLM performance.
+    - **System Messages:** Clearly defined system instructions to guide the LLM's behavior and role.
+    - **Context Integration:** Efficient incorporation of retrieved context to minimize hallucination and enhance factual accuracy.
+    - **Explicit Instructions:** Detailed guidelines for answer format, length, and content, ensuring consistent and relevant responses.
+    - **Safety & Guardrails:** Prompts are engineered to reduce bias and handle ambiguous queries gracefully.
 
 ## �� Contributing
 
